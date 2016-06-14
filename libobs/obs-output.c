@@ -306,6 +306,12 @@ void obs_output_stop(obs_output_t *output)
 	if (!output->context.data)
 		return;
 
+	if (!output->delay_active) {
+		if (os_atomic_load_bool(&output->stopping))
+			return;
+		os_atomic_set_bool(&output->stopping, true);
+	}
+
 	encoded = (output->info.flags & OBS_OUTPUT_ENCODED) != 0;
 
 	if (encoded && output->active_delay_ns) {
@@ -1637,6 +1643,7 @@ static void *end_data_capture_thread(void *data)
 
 	do_output_signal(output, "deactivate");
 	output->active = false;
+	os_atomic_set_bool(&output->stopping, false);
 
 	return NULL;
 }

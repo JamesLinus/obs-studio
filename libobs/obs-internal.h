@@ -782,6 +782,7 @@ struct obs_output {
 	bool                            received_video;
 	bool                            received_audio;
 	volatile bool                   data_active;
+	volatile bool                   stopping;
 	int64_t                         video_offset;
 	int64_t                         audio_offsets[MAX_AUDIO_MIXES];
 	int64_t                         highest_audio_ts;
