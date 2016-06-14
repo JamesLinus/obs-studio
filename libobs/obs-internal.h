@@ -795,9 +795,9 @@ struct obs_output {
 	int                             reconnect_retry_max;
 	int                             reconnect_retries;
 	int                             reconnect_retry_cur_sec;
-	bool                            reconnecting;
 	pthread_t                       reconnect_thread;
 	os_event_t                      *reconnect_stop_event;
+	volatile bool                   reconnecting;
 	volatile bool                   reconnect_thread_active;
 
 	uint32_t                        starting_drawn_count;
@@ -807,7 +807,7 @@ struct obs_output {
 
 	int                             total_frames;
 
-	bool                            active;
+	volatile bool                   active;
 	video_t                         *video;
 	audio_t                         *audio;
 	obs_encoder_t                   *video_encoder;
