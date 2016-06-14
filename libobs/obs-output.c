@@ -305,6 +305,8 @@ void obs_output_stop(obs_output_t *output)
 		return;
 	if (!output->context.data)
 		return;
+	if (!output->active && !output->reconnecting)
+		return;
 
 	if (!output->delay_active) {
 		if (os_atomic_load_bool(&output->stopping))
