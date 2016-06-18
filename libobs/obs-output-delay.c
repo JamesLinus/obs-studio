@@ -18,6 +18,16 @@
 #include <inttypes.h>
 #include "obs-internal.h"
 
+static inline delay_active(const struct obs_output *output)
+{
+	return os_atomic_load_bool(&output->delay_active);
+}
+
+static inline delay_capturing(const struct obs_output *output)
+{
+	return os_atomic_load_bool(&output->delay_capturing);
+}
+
 static inline void push_packet(struct obs_output *output,
 		struct encoder_packet *packet, uint64_t t)
 {
@@ -37,7 +47,7 @@ static inline void process_delay_data(struct obs_output *output,
 {
 	switch (dd->msg) {
 	case DELAY_MSG_PACKET:
-		if (!output->delay_active || !output->delay_capturing)
+		if (!delay_active(output) || !delay_capturing(output))
 			obs_free_encoder_packet(&dd->packet);
 		else
 			output->delay_callback(output, &dd->packet);
@@ -129,7 +139,7 @@ bool obs_output_delay_start(obs_output_t *output)
 		.ts  = os_gettime_ns(),
 	};
 
-	if (!output->delay_active) {
+	if (!delay_active(output)) {
 		bool can_begin = obs_output_can_begin_data_capture(output, 0);
 		if (!can_begin)
 			return false;
@@ -141,8 +151,9 @@ bool obs_output_delay_start(obs_output_t *output)
 	circlebuf_push_back(&output->delay_data, &dd, sizeof(dd));
 	pthread_mutex_unlock(&output->delay_mutex);
 
-	if (output->delay_active) {
-		os_atomic_inc_long(&output->delay_restart_refs);
+	os_atomic_inc_long(&output->delay_restart_refs);
+
+	if (delay_active(output)) {
 		do_output_signal(output, "starting");
 		return true;
 	}

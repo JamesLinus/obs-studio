@@ -782,12 +782,12 @@ struct obs_output {
 	bool                            received_video;
 	bool                            received_audio;
 	volatile bool                   data_active;
-	volatile bool                   stopping;
 	int64_t                         video_offset;
 	int64_t                         audio_offsets[MAX_AUDIO_MIXES];
 	int64_t                         highest_audio_ts;
 	int64_t                         highest_video_ts;
 	pthread_t                       end_data_capture_thread;
+	os_event_t                      *stopping_event;
 	pthread_mutex_t                 interleaved_mutex;
 	DARRAY(struct encoder_packet)   interleaved_packets;
 	int                             stop_code;
@@ -834,8 +834,8 @@ struct obs_output {
 	uint32_t                        delay_flags;
 	uint32_t                        delay_cur_flags;
 	volatile long                   delay_restart_refs;
-	bool                            delay_active;
-	bool                            delay_capturing;
+	volatile bool                   delay_active;
+	volatile bool                   delay_capturing;
 };
 
 static inline void do_output_signal(struct obs_output *output,
